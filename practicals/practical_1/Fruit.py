@@ -1,7 +1,10 @@
 class Fruit:
     def __init__(self, name, weight):
         self.name = name
-        self.weight = weight
+        if isinstance(weight, (int, float)) and weight > 0:
+            self.weight = weight
+        else:
+            raise Exception("weight can only be a positive number")
 
     def __add__(self, __o):
         if not isinstance(__o, Fruit):
