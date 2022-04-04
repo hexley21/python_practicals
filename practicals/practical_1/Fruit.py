@@ -13,7 +13,7 @@ class Fruit:
     def __eq__(self, __o):
         if not isinstance(__o, Fruit):
             return False
-        return str(self.name == __o.name)
+        return self.name == __o.name
 
 
 apple = Fruit("Apple", 13)
@@ -21,6 +21,6 @@ orange = Fruit("Orange", 5)
 
 print((apple + Fruit("Apple", 5)).weight)
 print(apple == orange)
-print(type(orange == orange))
+print(orange == orange)
 # print(orange + apple)
 # print(orange + 5)
