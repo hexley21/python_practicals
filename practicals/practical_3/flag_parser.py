@@ -1,7 +1,7 @@
 from bs4 import BeautifulSoup as BS
 from urllib.parse import urljoin
 import requests
-import os.path
+import unidecode  # pip install unidecode
 
 
 def parse_pages(url):
@@ -23,13 +23,24 @@ def parse_images(url):
             yield urljoin(url, img.attrs['src'])
 
 
-def download_images(img_url):
-    title = os.path.basename(img_url).lower()
-    if("drosha" not in title and
-            "gerbi" not in title):
-        title = title[:-4] + "s_gerbi.jpg"
-    print(f"downloading {title}...")
-    file = open(title, "wb")
+def parse_titles(url):
+    html_page = requests.get(url)
+    soup = BS(html_page.content, 'html.parser')
+    if html_page.status_code == 200:
+        title_url = soup.find(attrs={"class": 'armstxt'}).find_all('td')
+        for count, title in enumerate(title_url):
+            if (count+1) % 2 == 0:
+                start = str(title).find('>') + 2
+                stop = str(title)[start:].find('<')
+                yield str(title)[start-1:stop + start].replace("<br/>", "") \
+                    .replace(":", "").replace(" - ", " ").strip()
+
+
+def download_images(img_url, titles):
+    print(f"downloading {titles}...")
+    title = str(unidecode.unidecode(titles)).replace(" ", "_") \
+        .replace("-", "_").replace("`", "").replace("\'", "")
+    file = open(title + ".jpg", "wb")
     file.write(requests.get(img_url).content)
     file.close()
 
@@ -37,6 +48,7 @@ def download_images(img_url):
 link = 'http://www.heraldika.ge/index.php?m=85&p_news=1'
 pages_generator = parse_pages(link)
 for i in pages_generator:
+    title_generator = parse_titles(i)
     images_generator = parse_images(i)
-    for j in images_generator:
-        download_images(j)
+    for j, k in zip(images_generator, title_generator):
+        download_images(j, k)
