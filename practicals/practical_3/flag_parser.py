@@ -11,29 +11,27 @@ def parse_pages(url):
         for a in soup.find(attrs={"class": 'armsslide'}).find_all('a'):
             yield urljoin(url,  a.attrs['href'])
     else:
-        print("Something went wront: " + html_page.status_code)
+        print(f"Something went wront: status code #{html_page.status_code}")
 
 
 def parse_images(url):
     html_page = requests.get(url)
     soup = BS(html_page.content, 'html.parser')
-    if html_page.status_code == 200:
-        image_url = soup.find(attrs={"class": 'armstxt'}).find_all('img')
-        for img in image_url:
-            yield urljoin(url, img.attrs['src'])
+    image_url = soup.find(attrs={"class": 'armstxt'}).find_all('img')
+    for img in image_url:
+        yield urljoin(url, img.attrs['src'])
 
 
 def parse_titles(url):
     html_page = requests.get(url)
     soup = BS(html_page.content, 'html.parser')
-    if html_page.status_code == 200:
-        title_url = soup.find(attrs={"class": 'armstxt'}).find_all('td')
-        for count, title in enumerate(title_url):
-            if (count+1) % 2 == 0:
-                start = str(title).find('>') + 2
-                stop = str(title)[start:].find('<')
-                yield str(title)[start-1:stop + start].replace("<br/>", "") \
-                    .replace(":", "").replace(" - ", " ").strip()
+    title_url = soup.find(attrs={"class": 'armstxt'}).find_all('td')
+    for count, title in enumerate(title_url):
+        if (count+1) % 2 == 0:
+            start = str(title).find('>') + 2
+            stop = str(title)[start:].find('<')
+            yield str(title)[start-1:stop + start].replace("<br/>", "") \
+                .replace(":", "").replace(" - ", " ").strip()
 
 
 def download_images(img_url, titles):
